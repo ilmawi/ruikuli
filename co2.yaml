@@ -1,0 +1,71 @@
+esphome:
+  name: co2
+  friendly_name: CO2 Sensor
+
+esp32:
+  board: esp32-c3-devkitm-1
+  framework:
+    type: arduino
+
+# I2C configuration
+i2c:
+  sda: GPIO6  # Replace with your actual SDA pin
+  scl: GPIO7  # Replace with your actual SCL pin
+  scan: True   # Optional: Scans for I2C devices on startup
+
+wifi: # put passwords in "/esphome/!secrets.yaml"
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  
+  ap:
+    ssid: "CO2 Sensor Fallback"
+    password: "12345678"
+
+api:
+  encryption:
+    key: "" #add this
+
+# Updated OTA configuration with password
+ota:
+  platform: esphome
+  password: !secret ota_password
+
+
+logger:
+  level: DEBUG
+
+status_led:
+  pin: GPIO8
+
+sensor:
+  - platform: aht10
+    variant: aht20  # Using AHT20 variant
+    address: 0x38  # AHT20 I2C address
+    temperature:
+      name: "Room Temperature"
+      id: room_temperature
+      accuracy_decimals: 1
+    humidity:
+      name: "Room Humidity"
+      id: room_humidity
+      accuracy_decimals: 1
+    update_interval: 60s
+
+  - platform: ens160_i2c
+    id: ens160_sensor
+    eco2:
+      name: "eCO2"
+      accuracy_decimals: 0
+      unit_of_measurement: "ppm"
+    tvoc:
+      name: "TVOC"
+      accuracy_decimals: 0
+      unit_of_measurement: "ppb"
+    aqi:
+      name: "Air Quality Index"
+      accuracy_decimals: 0
+    compensation:
+      temperature: room_temperature
+      humidity: room_humidity
+    update_interval: 60s
+    address: 0x53  # ENS160 I2C address
